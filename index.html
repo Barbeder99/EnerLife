@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>EnerLife 💪 — Tu guía de máquinas de gimnasio</title>
+
+<!-- ===== CONFIGURACIÓN APP NATIVA (PWA) ===== -->
+<meta name="theme-color" content="#0B0D10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EnerLife">
+<meta name="description" content="EnerLife: domina las máquinas del gimnasio, cuántas series, repeticiones y descanso hacer por músculo.">
+<link id="app-icon" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B0D10'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E">
+<link id="app-touch-icon" rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF5A1F'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E">
+<link id="app-manifest" rel="manifest" href="">
+<script>
+  const manifest = {
+    name: "EnerLife - Guía de gimnasio",
+    short_name: "EnerLife",
+    description: "Domina las máquinas del gimnasio: series, repeticiones y descanso por músculo.",
+    start_url: ".",
+    display: "standalone",
+    background_color: "#0B0D10",
+    theme_color: "#0B0D10",
+    icons: [{
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B0D10'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E",
+      sizes: "512x512",
+      type: "image/svg+xml"
+    }]
+  };
+  const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+  document.getElementById('app-manifest').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    const swCode = `
+      self.addEventListener('install', e => self.skipWaiting());
+      self.addEventListener('activate', e => self.clients.claim());
+      self.addEventListener('fetch', e => {});
+    `;
+    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  }
+</script>
+
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:      '#0B0D10',
+          surface:  '#15181D',
+          surface2: '#1D2127',
+          steel:    '#8B93A1',
+          bone:     '#F4F3EF',
+          ember:    '#FF5A1F',
+          ember2:   '#FF8A3D',
+          volt:     '#C6FF3D',
+        },
+        fontFamily: {
+          display: ['"Bebas Neue"', 'sans-serif'],
+          body:    ['"Inter"', 'sans-serif'],
+          digital: ['"Share Tech Mono"', 'monospace'],
+        },
+        boxShadow: {
+          plate: '0 10px 30px -10px rgba(0,0,0,0.6)',
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+<style>
+  body{ font-family:'Inter', sans-serif; }
+  .font-display{ font-family:'Bebas Neue', sans-serif; letter-spacing:.03em; }
+  .font-digital{ font-family:'Share Tech Mono', monospace; }
+
+  .floor-texture{
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 2px, transparent 2px, transparent 14px);
+  }
+  .plate-ring{
+    background: radial-gradient(circle at 50% 50%, transparent 54%, rgba(255,90,31,0.18) 55%, rgba(255,90,31,0.18) 58%, transparent 59%);
+  }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:#31363f; border-radius:8px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
+  .card-hover{ transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+  .card-hover:hover{ transform: translateY(-4px); box-shadow: 0 16px 34px -14px rgba(255,90,31,0.35); border-color: rgba(255,90,31,0.55); }
+
+  .modal-enter{ animation: pop .22s ease-out; }
+  @keyframes pop{ from{ opacity:0; transform: scale(.96) translateY(8px);} to{opacity:1; transform:scale(1) translateY(0);} }
+
+  .tab-active{ background:#FF5A1F; color:#0B0D10; }
+
+  input[type=number]::-webkit-inner-spin-button{ opacity:1; }
+
+  .glow-text{ text-shadow: 0 0 24px rgba(255,90,31,0.45); }
+
+  .aspect-video-wrap{ position:relative; width:100%; padding-top:56.25%; border-radius:0.75rem; overflow:hidden; background:#000; }
+  .aspect-video-wrap iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+  @keyframes pulseRing{
+    0%{ box-shadow: 0 0 0 0 rgba(198,255,61,0.5); }
+    70%{ box-shadow: 0 0 0 14px rgba(198,255,61,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(198,255,61,0); }
+  }
+  .ring-pulse{ animation: pulseRing 1.8s infinite; }
+</style>
+</head>
+
+<body class="bg-ink text-bone floor-texture min-h-screen">
+
+<!-- ============ TOP NAV ============ -->
+<header class="sticky top-0 z-40 backdrop-blur bg-ink/85 border-b border-white/10">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🏋️‍♂️</span>
+      <span class="font-display text-2xl sm:text-3xl tracking-wide">ENER<span class="text-ember">LIFE</span></span>
+    </div>
+    <nav class="hidden sm:flex items-center gap-1 bg-surface rounded-full p-1 border border-white/10">
+      <button onclick="showView('inicio')" id="nav-inicio" class="nav-btn px-4 py-1.5 rounded-full text-sm font-semibold transition">🏠 Inicio</button>
+      <button onclick="showView('perfil')" id="nav-perfil" class="nav-btn px-4 py-1.5 rounded-full text-sm font-semibold transition">Perfil 💪</button>
+    </nav>
+    <div class="flex items-center gap-3">
+      <button id="install-btn" class="hidden bg-ember hover:bg-ember2 text-ink text-sm font-bold px-3 py-1.5 rounded-full shadow-md">📲 Instalar App Nativa</button>
+      <div id="mini-profile" class="hidden sm:flex items-center gap-2 text-sm text-steel"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section id="view-inicio">
+<div class="relative overflow-hidden border-b border-white/10">
+  <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full plate-ring"></div>
+  <div class="absolute -left-24 top-10 w-72 h-72 rounded-full plate-ring opacity-60"></div>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-16 relative">
+    <p class="uppercase tracking-[0.3em] text-ember font-semibold text-xs sm:text-sm mb-3">🔥 Guía interactiva de máquinas</p>
+    <h1 class="font-display text-5xl sm:text-7xl leading-[0.95] glow-text">ELIGE TU MÚSCULO.<br>DOMINA LA MÁQUINA.<br><span class="text-ember">ROMPE TU LÍMITE.</span></h1>
+    <p class="mt-5 max-w-xl text-steel text-base sm:text-lg">Selecciona un grupo muscular 👇 y te mostramos la máquina correcta con su reproductor multimedia integrado, series, repeticiones y cronómetro de descanso.</p>
+  </div>
+</div>
+
+<!-- ============ MUSCLE MENU ============ -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+  <div class="flex items-end justify-between mb-5">
+    <h2 class="font-display text-3xl sm:text-4xl">📋 MENÚ DE MÚSCULOS</h2>
+    <span class="text-steel text-sm hidden sm:block">Toca una tarjeta para ver la rutina</span>
+  </div>
+  <div id="muscle-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+</div>
+</section>
+
+<!-- ============ PERFIL VIEW ============ -->
+<section id="view-perfil" class="hidden">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+    <h2 class="font-display text-4xl sm:text-5xl mb-1">Perfil Enerlife & Registro de Sesión 💪</h2>
+    <p class="text-steel mb-8">Ingresa tu correo para vincular tu sesión personal. Tus datos quedarán **guardados de forma privada** en tu navegador.</p>
+
+    <div class="grid sm:grid-cols-5 gap-6">
+      <!-- Formulario -->
+      <form id="profile-form" class="sm:col-span-3 bg-surface border border-white/10 rounded-2xl p-6 space-y-4">
+        
+        <!-- CAMPO CLAVE: CORREO ELECTRÓNICO (SESIÓN ÚNICA) -->
+        <div>
+          <label class="text-sm font-semibold text-ember">✉️ Correo Electrónico (Tu ID de Sesión)</label>
+          <input required id="f-correo" type="email" placeholder="ejemplo@correo.com" onchange="switchUserSession()" class="mt-1 w-full bg-surface2 border border-ember/40 rounded-lg px-3 py-2.5 outline-none focus:border-ember placeholder:text-steel/50">
+          <p class="text-[11px] text-steel mt-1">Tu sesión se sincronizará automáticamente al escribir tu correo.</p>
+        </div>
+
+        <div>
+          <label class="text-sm font-semibold text-steel">Nombre completo</label>
+          <input required id="f-nombre" type="text" placeholder="Ej. Camila Rojas" class="mt-1 w-full bg-surface2 border border-white/10 rounded-lg px-3 py-2.5 outline-none focus:border-ember placeholder:text-steel/50">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-semibold text-steel">Edad</label>
+            <input required id="f-edad" type="number" min="12" max="100" placeholder="25" class="mt-1 w-full bg-surface2 border border-white/10 rounded-lg px-3 py-2.5 outline-none focus:border-ember placeholder:text-steel/50">
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-steel">Género</label>
+            <select id="f-genero" class="mt-1 w-full bg-surface2 border border-white/10 rounded-lg px-3 py-2.5 outline-none focus:border-ember text-bone">
+              <option value="m">Masculino</option>
+              <option value="f">Femenino</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm font-semibold text-steel">Peso (kg)</label>
+            <input required id="f-peso" type="number" min="20" max="300" step="0.1" placeholder="70" class="mt-1 w-full bg-surface2 border border-white/10 rounded-lg px-3 py-2.5 outline-none focus:border-ember placeholder:text-steel/50">
+          </div>
+          <div>
+            <label class="text-sm font-semibold text-steel">Estatura (cm)</label>
+            <input required id="f-estatura" type="number" min="100" max="250" placeholder="170" class="mt-1 w-full bg-surface2 border border-white/10 rounded-lg px-3 py-2.5 outline-none focus:border-ember placeholder:text-steel/50">
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-semibold text-steel">Objetivo Deportivo</label>
+          <select id="f-objetivo" class="mt-1 w-full bg-surface2 border border-white/10 rounded-lg px-3 py-2.5 outline-none focus:border-ember text-bone">
+            <option value="mantenimiento">Mantener peso y tonificar</option>
+            <option value="perder">Perder grasa / Definición</option>
+            <option value="ganar">Ganar masa muscular (Volumen)</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-ember hover:bg-ember2 text-ink font-bold py-3 rounded-lg transition shadow-lg">💾 Guardar Perfil en esta Sesión</button>
+        <div class="flex items-center justify-between">
+          <p id="profile-msg" class="text-volt text-sm hidden">✅ Perfil guardado en tu sesión.</p>
+          <button type="button" onclick="clearProfile()" id="clear-btn" class="hidden text-xs text-red-400 hover:underline">🗑️ Cerrar sesión / Borrar datos</button>
+        </div>
+      </form>
+
+      <!-- Ficha Técnica -->
+      <div class="sm:col-span-2 space-y-4">
+        <div id="member-card" class="rounded-2xl p-5 bg-gradient-to-br from-surface2 to-surface border border-ember/40 shadow-plate flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-display text-xl text-ember">FICHA TÉCNICA</span>
+              <span class="text-2xl">💪</span>
+            </div>
+            <p class="text-steel text-[10px] uppercase tracking-widest">Sesión de:</p>
+            <p id="card-correo" class="text-xs text-ember font-mono truncate mb-2">— Sin correo —</p>
+            <p class="text-steel text-xs uppercase tracking-widest">Nombre del atleta</p>
+            <p id="card-nombre" class="font-display text-2xl mb-3">— Sin registrar —</p>
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div class="bg-black/30 rounded-lg p-2">
+                <p class="text-steel text-[10px]">⚖️ Peso</p>
+                <p id="card-peso" class="font-digital text-base text-volt">--.- kg</p>
+              </div>
+              <div class="bg-black/30 rounded-lg p-2">
+                <p class="text-steel text-[10px]">📏 Estatura</p>
+                <p id="card-estatura" class="font-digital text-base text-volt">--- cm</p>
+              </div>
+            </div>
+            <div class="bg-black/40 border border-ember/30 rounded-xl p-3 text-center">
+              <p class="text-steel text-xs uppercase font-semibold">🔥 Consumo Diario Recomendado</p>
+              <p id="card-calorias" class="font-digital text-3xl text-volt font-bold my-1">---- kcal</p>
+              <p id="card-objetivo-tag" class="text-xs text-ember font-medium"></p>
+            </div>
+          </div>
+          <div class="mt-3 bg-black/30 rounded-lg p-2.5">
+            <p class="text-steel text-xs">📊 Diagnóstico IMC: <span id="card-imc" class="font-digital text-volt">--</span></p>
+            <p id="card-imc-tag" class="text-xs text-steel"></p>
+          </div>
+        </div>
+
+        <div id="card-consejos-box" class="bg-surface border border-white/10 rounded-2xl p-4 hidden">
+          <p class="font-display text-lg text-ember mb-1">💡 CONSEJOS SEGÚN TUS DATOS</p>
+          <ul id="card-consejos-list" class="text-xs text-steel space-y-2"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-white/10 mt-6">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-steel text-sm">
+    <p>💥 "El dolor que sientes hoy es la fuerza que sentirás mañana."</p>
+    <p>Hecho con 🧡 para tu progreso — EnerLife</p>
+  </div>
+</footer>
+
+<!-- ============ BOTTOM NAV (mobile) ============ -->
+<div class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-surface border-t border-white/10 flex">
+  <button onclick="showView('inicio')" id="navm-inicio" class="nav-btn flex-1 py-3 text-center text-sm font-semibold">🏠<br>Inicio</button>
+  <button onclick="showView('perfil')" id="navm-perfil" class="nav-btn flex-1 py-3 text-center text-sm font-semibold">💪<br>Perfil</button>
+</div>
+<div class="sm:hidden h-16"></div>
+
+<!-- ============ EXERCISE MODAL ============ -->
+<div id="modal-backdrop" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div id="modal-box" class="modal-enter bg-surface w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto border border-white/10">
+    <div class="sticky top-0 bg-surface/95 backdrop-blur px-5 py-4 flex items-center justify-between border-b border-white/10 z-10">
+      <h3 id="modal-title" class="font-display text-2xl sm:text-3xl"></h3>
+      <button onclick="closeModal()" class="text-steel hover:text-bone text-2xl leading-none px-2">✕</button>
+    </div>
+
+    <div class="px-5 py-4">
+      <div id="modal-tabs" class="flex gap-2 mb-4 flex-wrap"></div>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   INSTALAR APP NATIVA (PWA)
+   ========================================================= */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('install-btn').classList.remove('hidden');
+});
+document.getElementById('install-btn').addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('install-btn').classList.add('hidden');
+});
+
+/* =========================================================
+   DATA DE MÁQUINAS 
+   ========================================================= */
+const MUSCLES = [
+  {
+    id:'pecho', nombre:'Pecho', emoji:'🏋️‍♂️', color:'from-ember/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Press de pecho en máquina', 
+        maquina:'Máquina de Press de Pecho Sentado', 
+        youtubeId:'-bdEMLuFvGw',
+        series:4, reps:'10–12', descanso:90,
+        pasos:[
+          'Ajusta el asiento para que las agarraderas queden a la altura del pecho.',
+          'Siéntate con la espalda pegada al respaldo y los pies apoyados en el suelo.',
+          'Toma las agarraderas con las manos ligeramente más anchas que los hombros.',
+          'Empuja al frente extendiendo los brazos sin bloquear por completo los codos.',
+          'Regresa de forma controlada hasta sentir estiramiento en el pecho y repite.'
+        ]
+      },
+      { 
+        nombre:'Pec Deck / Aperturas en máquina', 
+        maquina:'Máquina Mariposa (Pec Deck)', 
+        youtubeId:'0nSrP3Xpvx4',
+        series:3, reps:'12–15', descanso:60,
+        pasos:[
+          'Ajusta la altura del asiento para que tus codos y hombros queden alineados.',
+          'Apoya completamente la espalda y la cabeza en el respaldo.',
+          'Junta los agarres al frente contrayendo el pecho al máximo.',
+          'Abre los brazos despacio sintiendo el estiramiento muscular.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'espalda', nombre:'Espalda', emoji:'🔙', color:'from-blue-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Jalón al pecho (polea alta)', 
+        maquina:'Máquina de Jalón al Pecho (Polea Alta)', 
+        youtubeId:'Ln0CZzrlTEw',
+        series:4, reps:'10–12', descanso:90,
+        pasos:[
+          'Ajusta el soporte de piernas para que queden firmes bajo el cojín.',
+          'Toma la barra con agarre prono, un poco más ancho que los hombros.',
+          'Inclina levemente el torso hacia atrás y saca el pecho.',
+          'Jala la barra hacia la parte superior del pecho llevando los codos hacia abajo.',
+          'Sube controlando el peso hasta la extensión completa de los brazos.'
+        ]
+      },
+      { 
+        nombre:'Remo sentado en máquina', 
+        maquina:'Máquina de Remo Sentado con Polea', 
+        youtubeId:'1TAuQ2mlsio',
+        series:3, reps:'12', descanso:60,
+        pasos:[
+          'Siéntate y apoya los pies en las plataformas con rodillas ligeramente flexionadas.',
+          'Toma las agarraderas y mantén la espalda recta durante todo el recorrido.',
+          'Jala hacia el abdomen llevando los codos hacia atrás y juntando los omóplatos.',
+          'Regresa lentamente sin dejar caer el peso de golpe.'
+        ]
+      },
+      { 
+        nombre:'Jalón de Espalda Divergente', 
+        maquina:'Máquina de Jalón Divergente para Dorsales', 
+        youtubeId:'CAwf7n6Luuc',
+        series:3, reps:'10–12', descanso:75,
+        pasos:[
+          'Ajusta el asiento para un soporte cómodo.',
+          'Toma los mangos independientes y tracciona simultáneamente hacia el pecho.',
+          'Mantén el pecho erguido al apretar los dorsales.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'piernas', nombre:'Piernas', emoji:'🦵', color:'from-purple-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Prensa de piernas', 
+        maquina:'Máquina de Prensa de Piernas Inclina a 45°', 
+        youtubeId:'xR5GRg_E6kk',
+        series:4, reps:'12–15', descanso:90,
+        pasos:[
+          'Siéntate y coloca los pies en la plataforma al ancho de los hombros.',
+          'Libera los seguros y baja la plataforma hasta formar 90° en las rodillas.',
+          'Empuja la plataforma extendiendo las piernas sin bloquear las rodillas.',
+          'Controla el descenso; nunca sueltes el peso de golpe.'
+        ]
+      },
+      { 
+        nombre:'Extensión de cuádriceps', 
+        maquina:'Máquina de Extensión de Cuádriceps', 
+        youtubeId:'GwkdX6k9314',
+        series:3, reps:'12–15', descanso:60,
+        pasos:[
+          'Ajusta el respaldo y el rodillo para que quede sobre la parte baja de la espinilla.',
+          'Extiende las piernas hasta casi la extensión completa.',
+          'Aprieta el cuádriceps arriba por un segundo.',
+          'Baja de forma controlada sin dejar caer el peso.'
+        ]
+      },
+      { 
+        nombre:'Hack Squat / Sentadilla Hack', 
+        maquina:'Máquina de Sentadilla Hack', 
+        youtubeId:'0tn5K9NlCfo',
+        series:4, reps:'10–12', descanso:90,
+        pasos:[
+          'Apoya firme la espalda y hombros en los cojines.',
+          'Flexiona las rodillas bajando con control hasta los 90 grados.',
+          'Empuja con fuerza los talones para subir.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'isquios', nombre:'Isquiotibiales', emoji:'🍖', color:'from-purple-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Curl femoral tumbado', 
+        maquina:'Máquina de Curl Femoral Acostado', 
+        youtubeId:'dgC_vfiXVHg',
+        series:3, reps:'12', descanso:60,
+        pasos:[
+          'Acuéstate boca abajo y coloca el rodillo justo sobre los talones.',
+          'Flexiona las rodillas llevando el rodillo hacia los glúteos.',
+          'Aprieta el isquiotibial arriba y baja lentamente.'
+        ]
+      },
+      { 
+        nombre:'Curl femoral sentado', 
+        maquina:'Máquina de Curl Femoral Sentado', 
+        youtubeId:'1Tq3QdYUuHs',
+        series:3, reps:'12–15', descanso:60,
+        pasos:[
+          'Ajusta el muslo con la almohadilla superior para fijarte.',
+          'Flexiona las piernas empujando el rodillo hacia abajo.',
+          'Regresa despacio contrayendo de forma sostenida.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'hombros', nombre:'Hombros', emoji:'🙆', color:'from-yellow-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Press de hombros en máquina', 
+        maquina:'Máquina de Press de Hombros Sentado', 
+        youtubeId:'WgvZiPu-Zj0',
+        series:4, reps:'10–12', descanso:90,
+        pasos:[
+          'Ajusta el asiento para que las agarraderas inicien a la altura de los hombros.',
+          'Empuja hacia arriba extendiendo los brazos sin bloquear codos.',
+          'Baja de forma controlada hasta la posición inicial.'
+        ]
+      },
+      { 
+        nombre:'Elevaciones laterales en máquina', 
+        maquina:'Máquina de Elevaciones Laterales para Deltoides', 
+        youtubeId:'3VcKaXpzqRo',
+        series:3, reps:'12–15', descanso:60,
+        pasos:[
+          'Apoya el pecho o espalda e introduce los brazos detrás de los cojines.',
+          'Eleva los codos hacia los lados hasta la altura de los hombros.',
+          'Pausa un segundo arriba y desciende despacio.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'biceps', nombre:'Bíceps', emoji:'💪', color:'from-ember/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Curl de bíceps en máquina Scott', 
+        maquina:'Máquina de Curl de Bíceps Predicador (Scott)', 
+        youtubeId:'sQQ7m6I65po',
+        series:3, reps:'12–15', descanso:60,
+        pasos:[
+          'Ajusta el asiento para que las axilas queden apoyadas sobre el cojín.',
+          'Flexiona los codos llevando el peso hacia los hombros.',
+          'Baja lentamente controlando el peso.'
+        ]
+      },
+      { 
+        nombre:'Curl de bíceps en polea baja', 
+        maquina:'Estación de Polea Baja para Bíceps', 
+        youtubeId:'kwG2ipFRgfo',
+        series:3, reps:'12', descanso:60,
+        pasos:[
+          'Sujeta la barra unida a la polea baja con codos pegados al cuerpo.',
+          'Sube la barra flexionado únicamente los brazos.',
+          'Controla la bajada para mantener la tensión muscular continua.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'triceps', nombre:'Tríceps', emoji:'🦾', color:'from-red-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Extensión de tríceps en polea alta', 
+        maquina:'Estación de Polea Alta para Tríceps', 
+        youtubeId:'sJs1GpiTp8g',
+        series:3, reps:'12–15', descanso:60,
+        pasos:[
+          'Codos pegados al cuerpo e inclinación ligera hacia adelante.',
+          'Empuja la barra/cuerda hacia abajo extendiendo codos por completo.',
+          'Sube controlando el peso sin despegar los codos del torso.'
+        ]
+      },
+      { 
+        nombre:'Press de tríceps sentado en máquina', 
+        maquina:'Máquina de Fondos/Press de Tríceps Sentado', 
+        youtubeId:'6kALZikXxLc',
+        series:3, reps:'10–12', descanso:60,
+        pasos:[
+          'Siéntate y ajusta el cinturón o almohadilla en tus muslos.',
+          'Empuja las manijas hacia abajo extendiendo los brazos.',
+          'Vuelve lentamente sin dejar que los pesos choquen.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'abdomen', nombre:'Abdomen', emoji:'🔥', color:'from-volt/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Crunch abdominal en máquina', 
+        maquina:'Máquina de Crunches Abdominales', 
+        youtubeId:'DLU0RKjZV2g',
+        series:3, reps:'15–20', descanso:45,
+        pasos:[
+          'Sujeta las agarraderas superiores y apoya los pies.',
+          'Flexiona el torso hacia adelante usando la fuerza del abdomen.',
+          'Exhala al contraer y regresa lento.'
+        ]
+      },
+      { 
+        nombre:'Rotación de torso en máquina', 
+        maquina:'Máquina de Rotación de Torso para Oblicuos', 
+        youtubeId:'V6K9bt4zbjc',
+        series:3, reps:'15 por lado', descanso:45,
+        pasos:[
+          'Ajusta la máquina hacia un costado.',
+          'Gira el torso contrayendo los oblicuos de forma fluida.',
+          'Controla el retorno para no usar inercia.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'gluteos', nombre:'Glúteos', emoji:'🍑', color:'from-pink-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Empuje de cadera en máquina', 
+        maquina:'Máquina de Hip Thrust (Empuje de Cadera)', 
+        youtubeId:'c2iJjdXpt1U',
+        series:4, reps:'12–15', descanso:90,
+        pasos:[
+          'Coloca el cojín acolchado en la cadera.',
+          'Empuja con los talones extendiendo la cadera hacia arriba.',
+          'Aprieta los glúteos arriba 1 segundo y desciende.'
+        ]
+      },
+      { 
+        nombre:'Patada de glúteo en máquina', 
+        maquina:'Máquina de Patada Trasera para Glúteos', 
+        youtubeId:'edvGnMX48eU',
+        series:3, reps:'12 por pierna', descanso:60,
+        pasos:[
+          'Apoya el pecho y rodilla en los soportes.',
+          'Empuja la plataforma con la planta del pie hacia atrás y arriba.',
+          'Contrae el glúteo en el punto máximo de extensión.'
+        ]
+      }
+    ]
+  },
+  {
+    id:'pantorrillas', nombre:'Pantorrillas', emoji:'🦶', color:'from-teal-500/20 to-transparent',
+    exercises:[
+      { 
+        nombre:'Elevación de talones sentado', 
+        maquina:'Máquina de Elevación de Talones Sentado', 
+        youtubeId:'EVcwEusNOxs',
+        series:4, reps:'15–20', descanso:45,
+        pasos:[
+          'Apoya la punta de los pies en la plataforma.',
+          'Baja los talones para estirar la pantorrilla.',
+          'Empuja subiendo lo más alto posible.'
+        ]
+      },
+      { 
+        nombre:'Elevación de talones de pie en máquina', 
+        maquina:'Máquina de Elevación de Talones de Pie', 
+        youtubeId:'RLX8HFAOIhg',
+        series:4, reps:'12–15', descanso:45,
+        pasos:[
+          'Coloca los hombros bajo las almohadillas.',
+          'Mantén piernas casi extendidas y eleva el peso con las puntas de los pies.',
+          'Aguanta arriba 1 segundo antes de descender lentamente.'
+        ]
+      }
+    ]
+  },
+];
+
+/* =========================================================
+   RENDER — MENÚ DE MÚSCULOS
+   ========================================================= */
+const grid = document.getElementById('muscle-grid');
+MUSCLES.forEach((m, idx) => {
+  const totalSeries = m.exercises.reduce((a,e)=>a+e.series,0);
+  const card = document.createElement('button');
+  card.className = `card-hover text-left bg-gradient-to-br ${m.color} bg-surface border border-white/10 rounded-2xl p-4 flex flex-col gap-3`;
+  card.onclick = () => openModal(idx);
+  card.innerHTML = `
+    <div class="text-4xl">${m.emoji}</div>
+    <div>
+      <p class="font-display text-2xl leading-none">${m.nombre}</p>
+      <p class="text-steel text-xs mt-1">${m.exercises.length} máquinas · ${totalSeries} series</p>
+    </div>
+    <span class="text-ember text-sm font-semibold">Ver guía de máquinas →</span>
+  `;
+  grid.appendChild(card);
+});
+
+/* =========================================================
+   MODAL & REPRODUCTOR
+   ========================================================= */
+let currentMuscle = null;
+let currentExerciseIdx = 0;
+let timerInterval = null;
+
+function openModal(idx){
+  currentMuscle = MUSCLES[idx];
+  currentExerciseIdx = 0;
+  document.getElementById('modal-title').textContent = `${currentMuscle.emoji} ${currentMuscle.nombre}`;
+  renderTabs();
+  renderExercise();
+  document.getElementById('modal-backdrop').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(){
+  document.getElementById('modal-backdrop').classList.add('hidden');
+  document.body.style.overflow = '';
+  stopTimer();
+}
+document.getElementById('modal-backdrop').addEventListener('click', (e)=>{
+  if(e.target.id === 'modal-backdrop') closeModal();
+});
+
+function renderTabs(){
+  const tabs = document.getElementById('modal-tabs');
+  tabs.innerHTML = '';
+  if(currentMuscle.exercises.length < 2){ tabs.classList.add('hidden'); return; }
+  tabs.classList.remove('hidden');
+  currentMuscle.exercises.forEach((ex, i)=>{
+    const btn = document.createElement('button');
+    btn.className = `px-3 py-1.5 rounded-full text-sm font-semibold border border-white/10 ${i===currentExerciseIdx ? 'tab-active' : 'bg-surface2 text-steel'}`;
+    btn.textContent = ex.nombre;
+    btn.onclick = () => { currentExerciseIdx = i; stopTimer(); renderTabs(); renderExercise(); };
+    tabs.appendChild(btn);
+  });
+}
+
+function playVideoEmbed(id, title) {
+  const container = document.getElementById(`video-container-${id}`);
+  if(!container) return;
+  container.innerHTML = `
+    <iframe 
+      src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1" 
+      title="${title}" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen
+      class="w-full h-full absolute inset-0 border-0 rounded-xl"
+    ></iframe>
+  `;
+}
+
+function renderExercise(){
+  const ex = currentMuscle.exercises[currentExerciseIdx];
+  const content = document.getElementById('modal-content');
+  
+  content.innerHTML = `
+    <div class="mb-4">
+      <p class="text-steel text-xs font-semibold mb-1 uppercase tracking-wider">🎥 Video Demostrativo</p>
+      <div id="video-container-${ex.youtubeId}" class="aspect-video-wrap relative group rounded-xl overflow-hidden bg-surface2 border border-white/10">
+        <img src="https://img.youtube.com/vi/${ex.youtubeId}/hqdefault.jpg" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition duration-300" alt="Vista previa video">
+        <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2 p-4 text-center">
+          <button onclick="playVideoEmbed('${ex.youtubeId}', '${ex.nombre}')" class="w-16 h-16 rounded-full bg-ember hover:bg-ember2 text-ink flex items-center justify-center font-bold text-2xl shadow-lg transition transform hover:scale-110">
+            ▶
+          </button>
+          <span class="text-xs font-bold text-bone bg-black/60 px-3 py-1 rounded-full border border-white/10">Toca para reproducir técnica en vivo</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-steel text-sm mb-1">Nombre técnico de la máquina</p>
+    <p class="font-display text-2xl mb-4 text-ember">${ex.maquina}</p>
+
+    <div class="grid grid-cols-3 gap-3 mb-5">
+      <div class="bg-surface2 border border-white/10 rounded-xl p-3 text-center">
+        <p class="text-2xl">🔁</p>
+        <p class="font-digital text-lg text-volt">${ex.series}</p>
+        <p class="text-xs text-steel">series</p>
+      </div>
+      <div class="bg-surface2 border border-white/10 rounded-xl p-3 text-center">
+        <p class="text-2xl">🔢</p>
+        <p class="font-digital text-lg text-volt">${ex.reps}</p>
+        <p class="text-xs text-steel">repeticiones</p>
+      </div>
+      <div class="bg-surface2 border border-white/10 rounded-xl p-3 text-center">
+        <p class="text-2xl">⏱️</p>
+        <p class="font-digital text-lg text-volt">${ex.descanso}s</p>
+        <p class="text-xs text-steel">descanso</p>
+      </div>
+    </div>
+
+    <p class="font-display text-xl mb-2">📖 Cómo ejecutar la técnica</p>
+    <ol class="space-y-2 mb-5">
+      ${ex.pasos.map((p,i)=>`<li class="flex gap-3 text-sm"><span class="shrink-0 w-6 h-6 rounded-full bg-ember/20 text-ember font-bold flex items-center justify-center">${i+1}</span><span class="text-bone/90">${p}</span></li>`).join('')}
+    </ol>
+
+    <div class="bg-surface2 border border-white/10 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <p class="font-display text-xl">⏳ Cronómetro de descanso</p>
+        <span class="text-steel text-xs">Sugerido: ${ex.descanso}s</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div id="timer-display" class="font-digital text-4xl text-volt tabular-nums">${formatTime(ex.descanso)}</div>
+        <div class="flex gap-2">
+          <button id="timer-start" onclick="startTimer(${ex.descanso})" class="bg-ember hover:bg-ember2 text-ink font-bold px-4 py-2 rounded-lg text-sm">▶️ Iniciar</button>
+          <button onclick="resetTimer(${ex.descanso})" class="bg-surface border border-white/10 hover:border-ember px-4 py-2 rounded-lg text-sm">↺ Reiniciar</button>
+        </div>
+      </div>
+      <p id="timer-msg" class="text-xs text-steel mt-2"></p>
+    </div>
+  `;
+}
+
+function formatTime(s){
+  const m = Math.floor(s/60).toString().padStart(2,'0');
+  const sec = Math.floor(s%60).toString().padStart(2,'0');
+  return `${m}:${sec}`;
+}
+
+function startTimer(totalSeconds){
+  stopTimer();
+  let remaining = totalSeconds;
+  const display = document.getElementById('timer-display');
+  const msg = document.getElementById('timer-msg');
+  display.classList.add('ring-pulse');
+  msg.textContent = '💨 Descansando… recupera el aliento.';
+  timerInterval = setInterval(()=>{
+    remaining--;
+    if(display) display.textContent = formatTime(Math.max(remaining,0));
+    if(remaining <= 0){
+      stopTimer();
+      if(msg) msg.textContent = '✅ ¡Tiempo cumplido! Dale a la siguiente serie 🔥';
+      if(display){ display.classList.remove('ring-pulse'); }
+      beep();
+    }
+  },1000);
+}
+
+function stopTimer(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+  const display = document.getElementById('timer-display');
+  if(display) display.classList.remove('ring-pulse');
+}
+
+function resetTimer(totalSeconds){
+  stopTimer();
+  const display = document.getElementById('timer-display');
+  const msg = document.getElementById('timer-msg');
+  if(display) display.textContent = formatTime(totalSeconds);
+  if(msg) msg.textContent = '';
+}
+
+function beep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    o.start();
+    o.stop(ctx.currentTime + 0.35);
+  }catch(e){}
+}
+
+/* =========================================================
+   VIEWS & RUTAS
+   ========================================================= */
+function showView(view){
+  document.getElementById('view-inicio').classList.toggle('hidden', view!=='inicio');
+  document.getElementById('view-perfil').classList.toggle('hidden', view!=='perfil');
+  ['nav-inicio','nav-perfil','navm-inicio','navm-perfil'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const isActive = id.endsWith(view);
+    el.classList.toggle('tab-active', isActive);
+    el.classList.toggle('text-steel', !isActive);
+  });
+}
+showView('inicio');
+
+/* =========================================================
+   LÓGICA DE SESIÓN POR CORREO (AISLAMIENTO TOTAL)
+   ========================================================= */
+const LAST_CORREO_KEY = 'enerlife_last_active_correo';
+
+function getStorageKey(correo) {
+  if(!correo) return null;
+  return 'enerlife_user_' + correo.trim().toLowerCase();
+}
+
+function switchUserSession() {
+  const correo = document.getElementById('f-correo').value.trim().toLowerCase();
+  if(!correo) {
+    resetCardDisplay();
+    return;
+  }
+
+  localStorage.setItem(LAST_CORREO_KEY, correo);
+  const userKey = getStorageKey(correo);
+  const savedData = localStorage.getItem(userKey);
+
+  if(savedData) {
+    try {
+      const data = JSON.parse(savedData);
+      document.getElementById('f-nombre').value = data.nombre || '';
+      document.getElementById('f-edad').value = data.edad || '';
+      document.getElementById('f-genero').value = data.genero || 'm';
+      document.getElementById('f-peso').value = data.peso || '';
+      document.getElementById('f-estatura').value = data.estatura || '';
+      document.getElementById('f-objetivo').value = data.objetivo || 'mantenimiento';
+      
+      calculateAndDisplay(data);
+    } catch(e) {
+      console.error("Error al cargar sesión", e);
+    }
+  } else {
+    document.getElementById('f-nombre').value = '';
+    document.getElementById('f-edad').value = '';
+    document.getElementById('f-peso').value = '';
+    document.getElementById('f-estatura').value = '';
+    resetCardDisplay();
+    document.getElementById('card-correo').textContent = correo;
+  }
+}
+
+function resetCardDisplay() {
+  document.getElementById('card-correo').textContent = '— Sin correo —';
+  document.getElementById('card-nombre').textContent = '— Sin registrar —';
+  document.getElementById('card-peso').textContent = '--.- kg';
+  document.getElementById('card-estatura').textContent = '--- cm';
+  document.getElementById('card-imc').textContent = '--';
+  document.getElementById('card-imc-tag').textContent = '';
+  document.getElementById('card-calorias').textContent = '---- kcal';
+  document.getElementById('card-objetivo-tag').textContent = '';
+  document.getElementById('card-consejos-box').classList.add('hidden');
+  document.getElementById('mini-profile').classList.add('hidden');
+  document.getElementById('clear-btn').classList.add('hidden');
+}
+
+function calculateAndDisplay(data) {
+  document.getElementById('card-correo').textContent = data.correo;
+  document.getElementById('card-nombre').textContent = data.nombre || '— Sin registrar —';
+  document.getElementById('card-peso').textContent = `${data.peso.toFixed(1)} kg`;
+  document.getElementById('card-estatura').textContent = `${data.estatura.toFixed(0)} cm`;
+
+  const estaturaM = data.estatura / 100;
+  const imc = data.peso / (estaturaM * estaturaM);
+  document.getElementById('card-imc').textContent = imc.toFixed(1);
+
+  let tag = '';
+  if(imc < 18.5){ tag = 'Bajo peso'; }
+  else if(imc < 25){ tag = 'Peso normal / Saludable ✅'; }
+  else if(imc < 30){ tag = 'Sobrepeso'; }
+  else { tag = 'Obesidad'; }
+  document.getElementById('card-imc-tag').textContent = tag;
+
+  let tmb = (10 * data.peso) + (6.25 * data.estatura) - (5 * data.edad);
+  if(data.genero === 'm'){ tmb += 5; } else { tmb -= 161; }
+
+  let tdee = tmb * 1.45;
+  let caloriasFinales = tdee;
+  let objetivoTexto = "";
+  if(data.objetivo === 'perder'){
+    caloriasFinales -= 400;
+    objetivoTexto = "Objetivo: Déficit (Perder grasa)";
+  } else if(data.objetivo === 'ganar'){
+    caloriasFinales += 350;
+    objetivoTexto = "Objetivo: Superávit (Ganar Músculo)";
+  } else {
+    objetivoTexto = "Objetivo: Mantenimiento Energético";
+  }
+
+  document.getElementById('card-calorias').textContent = `${Math.round(caloriasFinales)} kcal`;
+  document.getElementById('card-objetivo-tag').textContent = objetivoTexto;
+
+  const consejosList = document.getElementById('card-consejos-list');
+  consejosList.innerHTML = '';
+
+  const proteinaGramos = Math.round(data.peso * 1.8);
+  const aguaLitros = (data.peso * 0.035).toFixed(1);
+
+  const consejos = [
+    `🍗 <strong>Proteína recomendada:</strong> Consume aprox. <strong>${proteinaGramos}g</strong> al día para favorecer la recuperación muscular.`,
+    `💧 <strong>Hidratación:</strong> Toma mínimo <strong>${aguaLitros} Litros</strong> de agua al día para rendir al máximo en las máquinas.`,
+  ];
+
+  if(data.objetivo === 'perder'){
+    consejos.push('🥗 <strong>Consejo Déficit:</strong> Prioriza vegetales y fibra para mantener saciedad.');
+    consejos.push('🏃 <strong>Complemento:</strong> Realiza 15-20 min de cardio tras tu rutina.');
+  } else if(data.objetivo === 'ganar'){
+    consejos.push('🍚 <strong>Consejo Volumen:</strong> Consume carbohidratos complejos antes y después del gimnasio.');
+    consejos.push('😴 <strong>Descanso:</strong> Duerme entre 7 y 8 horas diarias.');
+  } else {
+    consejos.push('⚖️ <strong>Consistencia:</strong> Mantén el equilibrio nutricional e incrementa peso progresivamente.');
+  }
+
+  consejos.forEach(c => {
+    const li = document.createElement('li');
+    li.className = 'bg-surface2 p-2.5 rounded-lg border border-white/5';
+    li.innerHTML = c;
+    consejosList.appendChild(li);
+  });
+
+  document.getElementById('card-consejos-box').classList.remove('hidden');
+
+  const mini = document.getElementById('mini-profile');
+  mini.classList.remove('hidden');
+  mini.innerHTML = `<span>👤 ${data.nombre.split(' ')[0]}</span>`;
+  document.getElementById('clear-btn').classList.remove('hidden');
+}
+
+// Evento Guardar Perfil por Correo
+document.getElementById('profile-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const correo = document.getElementById('f-correo').value.trim().toLowerCase();
+  
+  if(!correo) {
+    alert("Ingresa un correo electrónico válido para guardar la sesión.");
+    return;
+  }
+
+  const profileData = {
+    correo: correo,
+    nombre: document.getElementById('f-nombre').value.trim(),
+    edad: parseInt(document.getElementById('f-edad').value),
+    genero: document.getElementById('f-genero').value,
+    peso: parseFloat(document.getElementById('f-peso').value),
+    estatura: parseFloat(document.getElementById('f-estatura').value),
+    objetivo: document.getElementById('f-objetivo').value
+  };
+
+  const userKey = getStorageKey(correo);
+  localStorage.setItem(userKey, JSON.stringify(profileData));
+  localStorage.setItem(LAST_CORREO_KEY, correo);
+
+  calculateAndDisplay(profileData);
+
+  const msg = document.getElementById('profile-msg');
+  msg.classList.remove('hidden');
+  setTimeout(()=>msg.classList.add('hidden'), 2500);
+});
+
+// Cargar la última sesión activa si existe
+function loadSavedProfile() {
+  const lastCorreo = localStorage.getItem(LAST_CORREO_KEY);
+  if (lastCorreo) {
+    document.getElementById('f-correo').value = lastCorreo;
+    switchUserSession();
+  }
+}
+
+// Borrar datos de la sesión activa
+function clearProfile() {
+  const correo = document.getElementById('f-correo').value.trim().toLowerCase();
+  if (!correo) return;
+
+  if (confirm(`¿Seguro que deseas borrar la sesión asociada a ${correo}?`)) {
+    const userKey = getStorageKey(correo);
+    localStorage.removeItem(userKey);
+    localStorage.removeItem(LAST_CORREO_KEY);
+    document.getElementById('f-correo').value = '';
+    document.getElementById('profile-form').reset();
+    resetCardDisplay();
+  }
+}
+
+// Inicializar al cargar ventana
+window.addEventListener('DOMContentLoaded', loadSavedProfile);
+</script>
+</body>
+</html>
